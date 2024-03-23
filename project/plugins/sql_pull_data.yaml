@@ -1,5 +1,5 @@
 name: sql_pull_data
-enabled: false
+enabled: true
 required: false
 description: >-
   Pull data from a SQL database. 
@@ -28,8 +28,9 @@ returns:
 
 configurations:
   api_type: openai
-  api_base:
-  api_key:
+  api_base: https://api.endpoints.anyscale.com/v1
+  api_key: esecret_bbcpg8rzqkrdmce7b8jq4wfcyd
   api_version:
-  deployment_name:
-  sqlite_db_path: sqlite:///../../../../sample_data/anomaly_detection.db
+  deployment_name: mistralai/Mixtral-8x7B-Instruct-v0.1
+  # sqlite_db_path: sqlite:///../../../../sample_data/anomaly_detection.db
+  sqlite_db_path: sqlite:///../../../../Chinook.db

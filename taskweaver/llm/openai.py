@@ -1,3 +1,6 @@
+from g4f.client import Client
+from g4f.Provider import ChatgptAi,You,Liaobots,Bing,ChatForAi,Chatgpt4Online,ChatgptNext,ChatgptX,Gemini,GeminiPro,GptTalkRu,FlowGpt,Koala
+import nest_asyncio
 import os
 from typing import Any, Generator, List, Optional
 
@@ -12,11 +15,15 @@ from .base import CompletionService, EmbeddingService, LLMServiceConfig
 DEFAULT_STOP_TOKEN: List[str] = ["<EOS>"]
 
 
+# nest_asyncio.apply()
+
+
 class OpenAIServiceConfig(LLMServiceConfig):
     def _configure(self) -> None:
         # shared common config
         self.api_type = self.llm_module_config.api_type
-        assert self.api_type in ["openai", "azure", "azure_ad"], "Invalid API type"
+        assert self.api_type in ["openai", "azure",
+                                 "azure_ad"], "Invalid API type"
 
         self._set_name(self.api_type)
 
@@ -28,7 +35,8 @@ class OpenAIServiceConfig(LLMServiceConfig):
         shared_api_key = self.llm_module_config.api_key
         self.api_key = self._get_str(
             "api_key",
-            shared_api_key if shared_api_key is not None else ("" if self.api_type == "azure_ad" else None),
+            shared_api_key if shared_api_key is not None else (
+                "" if self.api_type == "azure_ad" else None),
         )
 
         shared_model = self.llm_module_config.model
@@ -124,6 +132,7 @@ class OpenAIService(CompletionService, EmbeddingService):
                 api_key=(self.config.api_key if api_type == "azure" else self._get_aad_token()),
             )
         )
+        # self.client: Client = Client(provider=FlowGpt)
 
     def chat_completion(
         self,
@@ -179,7 +188,8 @@ class OpenAIService(CompletionService, EmbeddingService):
                     if delta is None:
                         continue
 
-                    role = delta.role if delta.role is not None else role
+                    # role = delta.role if delta.role is not None else role
+                    role = "assistant"
                     content = delta.content if delta.content is not None else ""
                     if content is None:
                         continue

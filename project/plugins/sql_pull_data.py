@@ -1,7 +1,7 @@
 from operator import itemgetter
 
 import pandas as pd
-from langchain.chat_models import AzureChatOpenAI, ChatOpenAI
+from langchain_openai import AzureChatOpenAI, ChatOpenAI
 from langchain.prompts import ChatPromptTemplate
 from langchain.schema.output_parser import StrOutputParser
 from langchain.schema.runnable import RunnableLambda, RunnableMap
@@ -29,11 +29,13 @@ class SqlPullData(Plugin):
             model = ChatOpenAI(
                 openai_api_key=self.config.get("api_key"),
                 model_name=self.config.get("deployment_name"),
+                base_url=self.config.get("api_base"),
                 temperature=0,
                 verbose=True,
             )
         else:
-            raise ValueError("Invalid API type. Please check your config file.")
+            raise ValueError(
+                "Invalid API type. Please check your config file.")
 
         template = """Based on the table schema below, write a SQL query that would answer the user's question:
             {schema}
@@ -51,15 +53,25 @@ class SqlPullData(Plugin):
         def get_schema(_):
             return self.db.get_table_info()
 
+        print('This is the db schema : ')
+        print(get_schema(""))
+
         inputs = {
             "schema": RunnableLambda(get_schema),
             "question": itemgetter("question"),
         }
-        sql_response = RunnableMap(inputs) | prompt | model.bind(stop=["\nSQLResult:"]) | StrOutputParser()
+        sql_response = RunnableMap(inputs) | prompt | model.bind(
+            stop=["\nSQLResult:"]) | StrOutputParser()
 
         sql = sql_response.invoke({"question": query})
 
+        print('This is the sql query : ')
+        print(sql)
+
         result = self.db._execute(sql, fetch="all")
+
+        print('This is the result : ')
+        print(result)
 
         df = pd.DataFrame(result)
 
