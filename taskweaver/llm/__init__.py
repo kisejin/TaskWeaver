@@ -21,6 +21,7 @@ from taskweaver.llm.qwen import QWenService, QWenServiceConfig
 from taskweaver.llm.sentence_transformer import SentenceTransformerService
 from taskweaver.llm.util import ChatMessageType, format_chat_message
 from taskweaver.llm.zhipuai import ZhipuAIService
+from taskweaver.llm.gpt4free import Gpt4freeService
 
 llm_completion_config_map = {
     "openai": OpenAIService,
@@ -31,6 +32,7 @@ llm_completion_config_map = {
     "google_genai": GoogleGenAIService,
     "qwen": QWenService,
     "zhipuai": ZhipuAIService,
+    "gpt4free": Gpt4freeService
 }
 
 # TODO
@@ -62,6 +64,8 @@ class LLMApi(object):
             self._set_completion_service(QWenService)
         elif self.config.api_type == "zhipuai":
             self._set_completion_service(ZhipuAIService)
+        elif self.config.api_type == "gpt4free":
+            self._set_completion_service(Gpt4freeService) # register your LLM service here
         else:
             raise ValueError(f"API type {self.config.api_type} is not supported")
 
@@ -228,7 +232,6 @@ class LLMApi(object):
             stream: Optional[Generator[ChatMessageType, None, None]] = None
             try:
                 stream = stream_init()
-
                 for msg in stream:
                     if llm_thread_interrupt:
                         # early interrupt from drainer side
@@ -255,6 +258,8 @@ class LLMApi(object):
                 llm_source_failed = True
                 llm_source_error = e
             finally:
+                # print(stream)
+                # print(type(stream))
                 if stream is not None and isinstance(stream, types.GeneratorType):
                     try:
                         stream.close()
